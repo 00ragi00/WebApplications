@@ -1,0 +1,9 @@
+# Виртуальное окружение
+ve/
+env/
+venv/
+
+# Python кэш
+__pycache__/
+.pytest_cache/
+*.pyc
