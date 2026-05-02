@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Счётчик посещений{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body py-5">
+                <i class="bi bi-123 text-success" style="font-size: 3rem;"></i>
+                <h2 class="mt-3 fw-bold">Счётчик посещений</h2>
+                <p class="text-muted">Эта страница отслеживает количество ваших визитов в рамках сессии.</p>
+                <div class="display-1 fw-bold text-primary my-4">{{ visits }}</div>
+                <p class="lead">
+                    {% if visits == 1 %}
+                        Вы посетили эту страницу <strong>1</strong> раз.
+                    {% elif visits % 10 in (2, 3, 4) and visits % 100 not in (12, 13, 14) %}
+                        Вы посетили эту страницу <strong>{{ visits }}</strong> раза.
+                    {% else %}
+                        Вы посетили эту страницу <strong>{{ visits }}</strong> раз.
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('counter') }}" class="btn btn-success mt-2">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Обновить
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

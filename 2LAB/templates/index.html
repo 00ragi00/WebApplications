@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Главная — Flask Lab 2{% endblock %}
+{% block page_title %}Главная{% endblock %}
+{% block page_badge %}Обзор{% endblock %}
+
+{% block content %}
+<div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+
+    <div class="col">
+        <a href="{{ url_for('url_params') }}" class="card-link">
+            <div class="card h-100 text-center">
+                <div class="card-body py-4">
+                    <i class="bi bi-link-45deg fs-1" style="color:#0d9488;"></i>
+                    <div class="fw-bold mt-2">URL-параметры</div>
+                    <div class="text-muted small mt-1">request.args</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('headers') }}" class="card-link">
+            <div class="card h-100 text-center">
+                <div class="card-body py-4">
+                    <i class="bi bi-card-list fs-1" style="color:#6366f1;"></i>
+                    <div class="fw-bold mt-2">Заголовки</div>
+                    <div class="text-muted small mt-1">request.headers</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('cookies') }}" class="card-link">
+            <div class="card h-100 text-center">
+                <div class="card-body py-4">
+                    <i class="bi bi-cookie fs-1" style="color:#f59e0b;"></i>
+                    <div class="fw-bold mt-2">Cookie</div>
+                    <div class="text-muted small mt-1">request.cookies</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('form_data') }}" class="card-link">
+            <div class="card h-100 text-center">
+                <div class="card-body py-4">
+                    <i class="bi bi-ui-checks fs-1" style="color:#ec4899;"></i>
+                    <div class="fw-bold mt-2">Параметры формы</div>
+                    <div class="text-muted small mt-1">request.form</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{{ url_for('phone') }}" class="card-link">
+            <div class="card h-100 text-center">
+                <div class="card-body py-4">
+                    <i class="bi bi-telephone-fill fs-1" style="color:#0d9488;"></i>
+                    <div class="fw-bold mt-2">Телефон</div>
+                    <div class="text-muted small mt-1">Валидация + формат</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-info-circle" style="color:#6366f1;"></i>
+        <h2>О приложении</h2>
+    </div>
+    <div class="card-body">
+        <p class="text-secondary small mb-3">
+            Приложение демонстрирует работу с данными HTTP-запроса во Flask и валидацию пользовательского ввода.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            {% for label, color in [('Flask', '#0d9488'), ('Jinja2', '#6366f1'), ('Python 3', '#f59e0b'), ('Bootstrap 5', '#ec4899')] %}
+            <span class="badge rounded-pill"
+                  style="background:{{ color }}18; color:{{ color }}; border:1px solid {{ color }}38; font-weight:600;">
+                {{ label }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
