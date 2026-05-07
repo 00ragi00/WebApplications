@@ -1,104 +1,57 @@
 {% extends 'base.html' %}
-{% block title %}Валидация телефона — Flask Lab 2{% endblock %}
-{% block page_title %}Валидация телефона{% endblock %}
-{% block page_badge %}Regex{% endblock %}
+
+{% block title %}Проверка номера телефона{% endblock %}
 
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body py-5 px-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-telephone-fill text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="mt-3 fw-bold">Проверка номера телефона</h2>
+                    <p class="text-muted">Введите номер телефона и нажмите «Проверить»</p>
+                </div>
 
-<div class="card mb-4">
-    <div class="card-header">
-        <i class="bi bi-telephone-fill" style="color:#0d9488;"></i>
-        <h2>Проверка номера телефона</h2>
-    </div>
-    <div class="card-body">
-        <p class="text-secondary small mb-3">
-            Допустимые форматы ввода: <code>+7 (123) 456-75-90</code> &nbsp;·&nbsp;
-            <code>8(123)4567590</code> &nbsp;·&nbsp; <code>123.456.75.90</code>
-        </p>
+                <form method="POST" novalidate>
+                    <div class="mb-4">
+                        <label for="phone" class="form-label fw-semibold">Номер телефона</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input type="text"
+                                   class="form-control {% if error %}is-invalid{% elif formatted %}is-valid{% endif %}"
+                                   id="phone" name="phone"
+                                   placeholder="+7 (999) 123-45-67"
+                                   value="{{ phone_value }}">
+                            {% if error %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                            {% elif formatted %}
+                            <div class="valid-feedback">Номер корректен!</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-text mt-2">
+                            Допустимые форматы:
+                            <code>+7 (123) 456-75-90</code>,
+                            <code>8(123)4567590</code>,
+                            <code>123.456.75.90</code>
+                        </div>
+                    </div>
 
-        <form method="POST" action="{{ url_for('phone') }}" novalidate>
-            <div class="mb-3">
-                <label class="form-label">
-                    <i class="bi bi-telephone"></i> Номер телефона
-                </label>
-                <input
-                    type="text"
-                    class="form-control {% if error %}is-invalid{% endif %}"
-                    name="phone"
-                    placeholder="+7 (___) ___-__-__"
-                    value="{{ raw }}"
-                    autocomplete="off">
-                {% if error %}
-                <div class="invalid-feedback">
-                    <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle me-1"></i>Проверить
+                        </button>
+                    </div>
+                </form>
+
+                {% if formatted %}
+                <div class="alert alert-success mt-4 mb-0">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Номер в стандартном формате: <strong>{{ formatted }}</strong>
                 </div>
                 {% endif %}
             </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i>Проверить
-                </button>
-                {% if raw %}
-                <a href="{{ url_for('phone') }}" class="btn btn-outline-primary">
-                    <i class="bi bi-x-lg me-1"></i>Очистить
-                </a>
-                {% endif %}
-            </div>
-        </form>
-
-        {% if formatted %}
-        <div class="phone-result">
-            <div class="label"><i class="bi bi-check-circle-fill me-1"></i>Номер корректен</div>
-            <div class="number">{{ formatted }}</div>
         </div>
-        {% endif %}
     </div>
 </div>
-
-<div class="card mb-4">
-    <div class="card-header">
-        <i class="bi bi-shield-check" style="color:#6366f1;"></i>
-        <h2>Правила валидации</h2>
-    </div>
-    <div class="card-body p-0">
-        <table class="table table-hover table-sm mb-0">
-            <thead class="table-light">
-                <tr><th>Условие</th><th>Описание</th></tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-primary fw-semibold font-monospace">Длина цифр</td>
-                    <td>10 цифр — для обычных номеров; 11 цифр — если начинается с <code>+7</code> или <code>8</code></td>
-                </tr>
-                <tr>
-                    <td class="text-primary fw-semibold font-monospace">Символы</td>
-                    <td>Цифры, пробелы, <code>(</code> <code>)</code> <code>-</code> <code>.</code> <code>+</code></td>
-                </tr>
-                <tr>
-                    <td class="text-primary fw-semibold font-monospace">Формат вывода</td>
-                    <td><code>8-XXX-XXX-XX-XX</code></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <i class="bi bi-collection" style="color:#f59e0b;"></i>
-        <h2>Примеры допустимого ввода</h2>
-    </div>
-    <div class="card-body d-flex flex-wrap gap-2">
-        {% for ex in ['+7 (123) 456-75-90', '8(123)4567590', '123.456.75.90',
-                      '8 123 456 75 90', '+7-123-456-75-90', '(123)456-75-90'] %}
-        <span class="badge bg-light text-primary border font-monospace"
-              style="cursor:pointer; font-size:.82rem; padding:6px 12px;"
-              onclick="document.querySelector('[name=phone]').value='{{ ex }}'">
-            {{ ex }}
-        </span>
-        {% endfor %}
-    </div>
-</div>
-
 {% endblock %}

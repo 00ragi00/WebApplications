@@ -1,25 +1,76 @@
-import re
 from flask import Flask, render_template, request, redirect, url_for, make_response
+from urllib.parse import urlencode
+import re
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'
 application = app
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+PARAM_ROWS = 4  
+
+@app.route('/info')
+def info():
+    url_params = dict(request.args)
+    headers    = dict(request.headers)
+    cookies    = dict(request.cookies)
+
+    pairs = list(url_params.items())
+    pairs += [('', '')] * (PARAM_ROWS - len(pairs))
+    pairs = pairs[:PARAM_ROWS]
+    return render_template('info.html',
+                           url_params=url_params,
+                           pairs=pairs,
+                           headers=headers,
+                           cookies=cookies)
+
+
+@app.route('/apply-params', methods=['POST'])
+def apply_params():
+    keys = request.form.getlist('pkey')
+    vals = request.form.getlist('pval')
+    params = [(k.strip(), v.strip()) for k, v in zip(keys, vals) if k.strip()]
+    qs = urlencode(params)
+    return redirect(url_for('info') + ('?' + qs if qs else ''))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    submitted = None
+
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        submitted = {'username': username, 'password': password}
+
+    return render_template('login.html', submitted=submitted)
+
+@app.route('/set-cookie', methods=['POST'])
+def set_cookie():
+    name  = request.form.get('name', '').strip()
+    value = request.form.get('value', '').strip()
+    resp  = make_response(redirect(url_for('info')))
+    if name:
+        resp.set_cookie(name, value)
+    return resp
+
+@app.route('/delete-cookie', methods=['POST'])
+def delete_cookie():
+    name = request.form.get('name', '').strip()
+    resp = make_response(redirect(url_for('info')))
+    if name:
+        resp.delete_cookie(name)
+    return resp
 
 def validate_phone(raw):
-    """
-    Возвращает (error_message | None, formatted | None)
-    """
-    allowed = re.compile(r'^[\d\s()\-\.+]+$')
-    if not allowed.match(raw):
+    bad = re.sub(r'[\d\s()\-\.+]', '', raw)
+    if bad:
         return 'Недопустимый ввод. В номере телефона встречаются недопустимые символы.', None
 
     digits = re.sub(r'\D', '', raw)
-
-    starts_with_plus7 = raw.lstrip().startswith('+7')
-    starts_with_8 = digits.startswith('8')
-
-    if starts_with_plus7 or starts_with_8:
+    stripped = raw.strip()
+    if stripped.startswith('+7') or (digits and digits[0] == '8'):
         required = 11
     else:
         required = 10
@@ -27,84 +78,24 @@ def validate_phone(raw):
     if len(digits) != required:
         return 'Недопустимый ввод. Неверное количество цифр.', None
 
-    last10 = digits[-10:]
-    formatted = f'8-{last10[0:3]}-{last10[3:6]}-{last10[6:8]}-{last10[8:10]}'
+    d = digits if len(digits) == 11 else '8' + digits
+    formatted = f'8-{d[1:4]}-{d[4:7]}-{d[7:9]}-{d[9:11]}'
     return None, formatted
 
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-
-# URL-параметры 
-@app.route('/url-params')
-def url_params():
-    params = request.args.to_dict(flat=False)
-    return render_template('url_params.html', params=params)
-
-
-# Заголовки запроса 
-@app.route('/headers')
-def headers():
-    hdrs = dict(request.headers)
-    return render_template('headers.html', headers=hdrs)
-
-
-# Cookie 
-@app.route('/cookies', methods=['GET', 'POST'])
-def cookies():
-    message = None
-    if request.method == 'POST':
-        action = request.form.get('action')
-        if action == 'set':
-            name  = request.form.get('cname', '').strip()
-            value = request.form.get('cvalue', '').strip()
-            resp  = make_response(redirect(url_for('cookies')))
-            if name:
-                resp.set_cookie(name, value)
-                message = f'Cookie «{name}» установлен.'
-            return resp
-        elif action == 'delete':
-            name = request.form.get('del_name', '').strip()
-            resp = make_response(redirect(url_for('cookies')))
-            if name:
-                resp.delete_cookie(name)
-                message = f'Cookie «{name}» удалён.'
-            return resp
-
-    all_cookies = dict(request.cookies)
-    return render_template('cookies.html', cookies=all_cookies, message=message)
-
-
-# Параметры формы (авторизация) 
-@app.route('/form-data', methods=['GET', 'POST'])
-def form_data():
-    submitted = None
-    if request.method == 'POST':
-        submitted = {
-            'Логин':  request.form.get('username', ''),
-            'Пароль': request.form.get('password', ''),
-        }
-    return render_template('form_data.html', submitted=submitted)
-
-
-# Валидация телефона 
 @app.route('/phone', methods=['GET', 'POST'])
 def phone():
-    error     = None
+    phone_value = ''
+    error = None
     formatted = None
-    raw       = ''
 
     if request.method == 'POST':
-        raw = request.form.get('phone', '').strip()
-        if raw:
-            error, formatted = validate_phone(raw)
-        else:
-            error = 'Недопустимый ввод. Неверное количество цифр.'
+        phone_value = request.form.get('phone', '')
+        error, formatted = validate_phone(phone_value)
 
-    return render_template('phone.html', error=error, formatted=formatted, raw=raw)
-
+    return render_template('phone.html',
+                           phone_value=phone_value,
+                           error=error,
+                           formatted=formatted)
 
 if __name__ == '__main__':
     app.run(debug=True)
