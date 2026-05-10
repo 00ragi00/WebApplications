@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import user_form %}
+{% block title %}Редактирование пользователя{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Редактирование пользователя</h2>
+
+<form method="post" class="col-md-6">
+    {{ user_form(form, errors, roles, show_login_password=False) }}
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary ms-2">Отмена</a>
+    </div>
+</form>
+{% endblock %}
