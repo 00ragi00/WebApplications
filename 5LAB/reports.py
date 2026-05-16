@@ -95,7 +95,7 @@ def logs_by_page_export():
     for i, row in enumerate(stats, 1):
         writer.writerow([i, row['path'], row['cnt']])
 
-    content = '﻿' + output.getvalue()
+    content = '' + output.getvalue()
     return Response(
         content.encode('utf-8'),
         mimetype='text/csv',
@@ -139,7 +139,7 @@ def logs_by_user_export():
     for i, row in enumerate(stats, 1):
         writer.writerow([i, _fullname(row), row['cnt']])
 
-    content = '﻿' + output.getvalue()
+    content = '' + output.getvalue()
     return Response(
         content.encode('utf-8'),
         mimetype='text/csv',
