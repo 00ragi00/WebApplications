@@ -19,6 +19,16 @@ def search_params():
         'category_ids': [x for x in request.args.getlist('category_ids') if x],
     }
 
+def get_current_user_review(course_id):
+    if not current_user.is_authenticated:
+        return None
+
+    return db.session.execute(
+        db.select(Review)
+        .filter_by(course_id=course_id, user_id=current_user.id)
+        .order_by(Review.created_at.asc(), Review.id.asc())
+    ).scalars().first()
+
 @bp.route('/')
 def index():
     courses = CoursesFilter(**search_params()).perform()
@@ -86,11 +96,7 @@ def reviews(course_id):
     pagination = db.paginate(query, per_page=5)
     reviews = pagination.items
 
-    user_review = None
-    if current_user.is_authenticated:
-        user_review = db.session.execute(
-            db.select(Review).filter_by(course_id=course_id, user_id=current_user.id)
-        ).scalar_one_or_none()
+    user_review = get_current_user_review(course_id)
 
     return render_template('courses/reviews.html',
                            course=course,
@@ -108,26 +114,32 @@ def show(course_id):
         .order_by(Review.created_at.desc())
         .limit(5)
     ).scalars().all()
-    user_review = None
-    if current_user.is_authenticated:
-        user_review = db.session.execute(
-            db.select(Review).filter_by(course_id=course_id, user_id=current_user.id)
-        ).scalar_one_or_none()
+    user_review = get_current_user_review(course_id)
     return render_template('courses/show.html', course=course, reviews=reviews, user_review=user_review)
 
 @bp.route('/<int:course_id>/reviews/create', methods=['POST'])
 @login_required
 def create_review(course_id):
     course = db.get_or_404(Course, course_id)
+    if get_current_user_review(course_id):
+        flash('Вы уже оставили отзыв к этому курсу.', 'warning')
+        return redirect(request.referrer or url_for('courses.show', course_id=course_id))
+
     review = Review(
         rating=int(request.form.get('rating')),
         text=request.form.get('text'),
         course_id=course_id,
         user_id=current_user.id
     )
-    db.session.add(review)
-    course.rating_sum += review.rating
-    course.rating_num += 1
-    db.session.commit()
+    try:
+        db.session.add(review)
+        course.rating_sum += review.rating
+        course.rating_num += 1
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash('Вы уже оставили отзыв к этому курсу.', 'warning')
+        return redirect(request.referrer or url_for('courses.show', course_id=course_id))
+
     flash('Отзыв успешно добавлен!', 'success')
     return redirect(request.referrer or url_for('courses.show', course_id=course_id))

@@ -87,6 +87,9 @@ class Course(Base):
 
 class Review(Base):
     __tablename__ = 'reviews'
+    __table_args__ = (
+        sa.UniqueConstraint('course_id', 'user_id', name='uq_reviews_course_id_user_id'),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
