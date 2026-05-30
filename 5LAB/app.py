@@ -192,6 +192,7 @@ def user_create():
 
         if errors:
             db.close()
+            flash('Исправьте ошибки в форме', 'danger')
             return render_template('user_create.html', roles=roles, form=form, errors=errors)
 
         login_val = form['login'].strip()
@@ -246,6 +247,7 @@ def user_edit(user_id):
 
         if errors:
             db.close()
+            flash('Исправьте ошибки в форме', 'danger')
             return render_template('user_edit.html', roles=roles, form=form,
                                    errors=errors, user=user, is_admin=is_admin)
 
