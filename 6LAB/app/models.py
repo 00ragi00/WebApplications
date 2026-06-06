@@ -1,7 +1,6 @@
 import os
 from typing import Optional, Union, List
 from datetime import datetime
-import sqlalchemy as sa
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import UserMixin
 from flask import url_for
@@ -87,9 +86,6 @@ class Course(Base):
 
 class Review(Base):
     __tablename__ = 'reviews'
-    __table_args__ = (
-        sa.UniqueConstraint('course_id', 'user_id', name='uq_reviews_course_id_user_id'),
-    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)

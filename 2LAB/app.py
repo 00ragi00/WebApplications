@@ -20,11 +20,7 @@ def info():
     pairs = list(url_params.items())
     pairs += [('', '')] * (PARAM_ROWS - len(pairs))
     pairs = pairs[:PARAM_ROWS]
-    return render_template('info.html',
-                           url_params=url_params,
-                           pairs=pairs,
-                           headers=headers,
-                           cookies=cookies)
+    return render_template('info.html', url_params=url_params, pairs=pairs, headers=headers, cookies=cookies)
 
 
 @app.route('/apply-params', methods=['POST'])
